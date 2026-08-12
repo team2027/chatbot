@@ -48,4 +48,6 @@ pnpm dev
 
 Your app should now be running on [localhost:3000](http://localhost:3000).
 
+Run `pnpm smoke` to verify the app end to end — it handles guest auth, sends a chat message, prints the streamed reply, and exits non-zero if anything is broken.
+
 > Note: You should not commit your `.env.local` file or it will expose secrets.

@@ -267,6 +267,8 @@ export async function POST(request: Request) {
 
         dataStream.merge(
           toUIMessageStream({
+            onError: (error) =>
+              error instanceof Error ? error.message : String(error),
             sendReasoning: isReasoningModel,
             stream: result.stream,
           })
