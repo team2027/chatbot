@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# End-to-end check: guest auth -> POST /api/chat -> streamed reply (with a getWeather tool call).
+# End-to-end check: guest auth -> POST /api/chat -> streamed reply with >= 1 getWeather call.
 # Reuses an already-running dev server; starts one and leaves it running if there isn't.
-# Exits 0 on success, non-zero with a one-line reason on failure.
+# Exits 0 on success, non-zero with a one-line reason on failure:
+#   1 environment/deps  2 server not ready  3 auth  4 model call  5 no tool call
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -13,7 +14,7 @@ JAR="${WORK}/cookies.txt"
 STREAM="${WORK}/stream.sse"
 READY_TIMEOUT="${SMOKE_READY_TIMEOUT:-60}"
 CHAT_TIMEOUT="${SMOKE_CHAT_TIMEOUT:-45}"
-PROMPT="${SMOKE_PROMPT:-What is the weather in San Francisco right now?}"
+PROMPT="${SMOKE_PROMPT:-my cat is picking where to nap. which is warmest right now — san francisco, new york, or los angeles?}"
 
 fail() {
   echo "SMOKE FAIL: $1" >&2
@@ -92,8 +93,11 @@ node -e '
   const fs = require("node:fs");
   const lines = fs.readFileSync(process.argv[1], "utf8").split("\n");
   let text = "";
-  let toolCall = false;
   let error = null;
+  // Count distinct getWeather calls by toolCallId. The prompt asks about several
+  // cities, so any number >= 1 is correct — never assert an exact count.
+  const toolCallIds = new Set();
+  let unidentifiedToolCalls = 0;
 
   for (const line of lines) {
     if (!line.startsWith("data: ")) { continue; }
@@ -101,25 +105,41 @@ node -e '
     if (!body || body === "[DONE]") { continue; }
     let part;
     try { part = JSON.parse(body); } catch { continue; }
-    if (typeof part.type === "string" && part.type.includes("getWeather")) { toolCall = true; }
-    if (part.toolName === "getWeather") { toolCall = true; }
+
+    const isWeatherCall =
+      part.toolName === "getWeather" ||
+      (typeof part.type === "string" && part.type.includes("getWeather"));
+    if (isWeatherCall) {
+      if (part.toolCallId) {
+        toolCallIds.add(part.toolCallId);
+      } else {
+        unidentifiedToolCalls += 1;
+      }
+    }
+
     if (part.type === "text-delta" && typeof part.delta === "string") { text += part.delta; }
     if (part.type === "error") { error = part.errorText || "unknown error"; }
   }
+
+  const toolCalls = toolCallIds.size || (unidentifiedToolCalls > 0 ? 1 : 0);
 
   if (error) {
     console.error(`SMOKE FAIL: the model call errored: ${error}`);
     process.exit(4);
   }
-  if (!text.trim() && !toolCall) {
+  if (!text.trim() && toolCalls === 0) {
     console.error("SMOKE FAIL: no assistant output in the stream");
     process.exit(4);
   }
+  if (toolCalls === 0) {
+    console.error("SMOKE FAIL: the model answered without calling getWeather");
+    process.exit(5);
+  }
 
   console.log("---");
-  console.log(text.trim() || "(tool call only, no text)");
+  console.log(text.trim() || "(tool calls only, no text)");
   console.log("---");
-  console.log(toolCall ? "tool: getWeather called" : "tool: WARNING — model answered without calling getWeather");
+  console.log(`tool: getWeather called ${toolCalls}x`);
 ' "$STREAM"
 status=$?
 [ "$status" -eq 0 ] || exit "$status"
