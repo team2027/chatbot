@@ -40,7 +40,6 @@ export const chat = pgTable("Chat", {
 export type Chat = InferSelectModel<typeof chat>;
 
 export const message = pgTable("Message_v2", {
-  attachments: json("attachments").notNull(),
   chatId: uuid("chatId")
     .notNull()
     .references(() => chat.id),
@@ -69,53 +68,6 @@ export const vote = pgTable(
 );
 
 export type Vote = InferSelectModel<typeof vote>;
-
-export const document = pgTable(
-  "Document",
-  {
-    content: text("content"),
-    createdAt: timestamp("createdAt").notNull(),
-    id: uuid("id").notNull().defaultRandom(),
-    kind: varchar("text", { enum: ["text", "code", "image", "sheet"] })
-      .notNull()
-      .default("text"),
-    title: text("title").notNull(),
-    userId: uuid("userId")
-      .notNull()
-      .references(() => user.id),
-  },
-  (table) => ({
-    pk: primaryKey({ columns: [table.id, table.createdAt] }),
-  })
-);
-
-export type Document = InferSelectModel<typeof document>;
-
-export const suggestion = pgTable(
-  "Suggestion",
-  {
-    createdAt: timestamp("createdAt").notNull(),
-    description: text("description"),
-    documentCreatedAt: timestamp("documentCreatedAt").notNull(),
-    documentId: uuid("documentId").notNull(),
-    id: uuid("id").notNull().defaultRandom(),
-    isResolved: boolean("isResolved").notNull().default(false),
-    originalText: text("originalText").notNull(),
-    suggestedText: text("suggestedText").notNull(),
-    userId: uuid("userId")
-      .notNull()
-      .references(() => user.id),
-  },
-  (table) => ({
-    documentRef: foreignKey({
-      columns: [table.documentId, table.documentCreatedAt],
-      foreignColumns: [document.id, document.createdAt],
-    }),
-    pk: primaryKey({ columns: [table.id] }),
-  })
-);
-
-export type Suggestion = InferSelectModel<typeof suggestion>;
 
 export const stream = pgTable(
   "Stream",

@@ -13,25 +13,19 @@ export type Surface =
   | "stream"
   | "database"
   | "history"
-  | "vote"
-  | "document"
-  | "suggestions"
-  | "activate_gateway";
+  | "vote";
 
 export type ErrorCode = `${ErrorType}:${Surface}`;
 
 export type ErrorVisibility = "response" | "log" | "none";
 
 export const visibilityBySurface: Record<Surface, ErrorVisibility> = {
-  activate_gateway: "response",
   api: "response",
   auth: "response",
   chat: "response",
   database: "log",
-  document: "response",
   history: "response",
   stream: "response",
-  suggestions: "response",
   vote: "response",
 };
 
@@ -88,9 +82,6 @@ export function getMessageByErrorCode(errorCode: ErrorCode): string {
     case "bad_request:api":
       return "The request couldn't be processed. Please check your input and try again.";
 
-    case "bad_request:activate_gateway":
-      return "AI Gateway requires a valid credit card on file to service requests. Please visit https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%3Fmodal%3Dadd-credit-card to add a card and unlock your free credits.";
-
     case "unauthorized:auth":
       return "You need to sign in before continuing.";
     case "forbidden:auth":
@@ -106,15 +97,6 @@ export function getMessageByErrorCode(errorCode: ErrorCode): string {
       return "You need to sign in to view this chat. Please sign in and try again.";
     case "offline:chat":
       return "We're having trouble sending your message. Please check your internet connection and try again.";
-
-    case "not_found:document":
-      return "The requested document was not found. Please check the document ID and try again.";
-    case "forbidden:document":
-      return "This document belongs to another user. Please check the document ID and try again.";
-    case "unauthorized:document":
-      return "You need to sign in to view this document. Please sign in and try again.";
-    case "bad_request:document":
-      return "The request to create or update the document was invalid. Please check your input and try again.";
 
     default:
       return "Something went wrong. Please try again later.";

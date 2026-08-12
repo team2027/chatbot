@@ -1,4 +1,3 @@
-import { withBotId } from "botid/next/config";
 import type { NextConfig } from "next";
 
 const basePath = process.env.IS_DEMO === "1" ? "/demo" : "";
@@ -18,14 +17,12 @@ const nextConfig: NextConfig = {
         ],
       }
     : {}),
-  cacheComponents: true,
   devIndicators: false,
   env: {
     NEXT_PUBLIC_BASE_PATH: basePath,
   },
   experimental: {
     appNewScrollHandler: true,
-    cachedNavigations: true,
     inlineCss: true,
     prefetchInlining: true,
     turbopackFileSystemCacheForDev: true,
@@ -34,10 +31,6 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         hostname: "avatar.vercel.sh",
-      },
-      {
-        hostname: "*.public.blob.vercel-storage.com",
-        protocol: "https",
       },
     ],
   },
@@ -51,4 +44,4 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
 };
 
-export default withBotId(nextConfig);
+export default nextConfig;
