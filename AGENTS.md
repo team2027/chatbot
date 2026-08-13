@@ -1,30 +1,9 @@
 # AGENTS.md
 
-Operator notes for this repo. Node >= 22, pnpm 10.
+Run `pnpm smoke` to verify the app end to end. It starts or reuses the dev server, sends a real chat message, prints the reply, and exits non-zero with a one-line reason if anything is broken. Run it after any change.
 
-## Environment
+`OPENAI_API_KEY` is already exported in the environment — use it from there, never copy the value into a file.
 
-- `OPENAI_API_KEY` is already exported in the environment. Use it from the environment — do not copy the value into `.env.local`, `.env`, source files, or commits.
-- Postgres is already provisioned and migrated (`POSTGRES_URL` is set). You do not need to run `pnpm db:migrate`.
-- `REDIS_URL` is optional and unset by default; the app runs without it.
+Postgres is already provisioned and migrated. Do not run `pnpm db:migrate`.
 
-## Running
-
-```bash
-pnpm install     # if node_modules is absent
-pnpm dev         # http://localhost:3000
-```
-
-## Verifying
-
-```bash
-pnpm smoke
-```
-
-One command, end to end: reuses the dev server if one is running (starts one and leaves it up otherwise), does the guest-auth handshake, sends a chat message, and prints the streamed reply. Exits 0 on success, non-zero with a one-line reason on failure. Safe to run repeatedly.
-
-## Layout
-
-- `app/(chat)/api/chat/route.ts` — the chat endpoint (streaming, tool calling)
-- `lib/ai/` — model config, provider, prompts, tools
-- `lib/db/` — Drizzle schema, queries, migrations
+Start the app with `pnpm dev` (http://localhost:3000). Node >= 22, pnpm 10, deps already installed.
