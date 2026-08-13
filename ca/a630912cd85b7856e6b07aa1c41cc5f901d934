@@ -1,0 +1,21 @@
+lib/ai/models.ts
+  s_1f798517ac37c3::t_24c8a3017c3b5d 18-19,24,31-32
+AGENTS.md
+  s_1f798517ac37c3::t_f3726d27ab8a38 3,5,7,9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.22",
+  "base_commit_sha": "caa630912cd85b7856e6b07aa1c41cc5f901d934",
+  "prompts": {},
+  "sessions": {
+    "s_1f798517ac37c3": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "59cebc72-cc1a-4c8a-95b7-6f71d8d818d0",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Aleksey Bykhun <theisease@gmail.com>"
+    }
+  }
+}
